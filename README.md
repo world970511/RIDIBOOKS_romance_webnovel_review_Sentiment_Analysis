@@ -10,7 +10,9 @@
 </p>
 
 <p>
-  <h3>origin_all_data.txta</h3>
+  <h1>data</h1>
+  
+  <h3>1.origin_all_data.txta</h3>
 
 언어: 한국어<br>
 출처: 리디북스(https://ridibooks.com/romance/)<br>
@@ -22,7 +24,7 @@
 긍정:48783 <br>
 
 
-<h3>result_all_data</h3>
+<h3>2.result_all_data</h3>
 
 언어: 한국어<br>
 출처: 리디북스(https://ridibooks.com/romance/)<br>
