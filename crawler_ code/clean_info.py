@@ -1,6 +1,8 @@
 import pandas as pd
-import numpy as np
 import os
+import warnings
+warnings.filterwarnings(action='ignore')
+
 
 all_data=pd.DataFrame(columns=['rate', 'review'])
 
@@ -16,22 +18,29 @@ all_data.drop_duplicates(subset=['review'], inplace=True)#중복된 리뷰들을
 print('중복 제거 확인 :',len(all_data))
 
 all_data = all_data.dropna(how = 'any') # Null 값이 존재하는 행 제거
-print(all_data.isnull().values.any()) # Null 값이 존재하는지 확인
+print('null값이 존재하는가?=',all_data.isnull().values.any()) # Null 값이 존재하는지 확인
+
+print('\n===================\n')
 
 #이벤트/홍보 관련 리뷰 제거
-remove=['이벤트','핫티스트','선리뷰','선구매','십오야','홀세일','통장','작가님','썸딜',
-        '나인NINE9','무료','알람','감상후','수정','리뷰뿅','연재','삽화','표지',
-        '리디','선별점','포인트백','포백','이벤','이벵','1+1','나중에','후리뷰']
+remove=['이벤트','핫티스트','선.+','십오야','홀세일','통장','작가님','썸딜','마크',
+        '나인NINE9','무료','알람','감상후','수정','리뷰뿅','연재','리디','포인트백',
+        '포백','이벤','이벵','1+1','나중에','후리뷰','.+님','리다무']
 for i in remove:
     all_data = all_data[all_data["review"].str.contains(i) == False]
 
 print(all_data.groupby('rate').size().reset_index(name = 'count'))#원래 데이터양 확인
 all_data.to_csv('origin_all_data.txt',mode='w',index=False)
 
+print('\n===================\n')
+
 n_data=all_data[all_data['rate']==-1]#부정 리뷰 추출
+n_data['rate']=n_data['rate'].apply(lambda x:x+1)
 p_data=all_data[all_data['rate']==1].sample(n=len(n_data))#부정 리뷰 길이에 맞춰 긍정 리뷰 랜덤 추출
 
 #긍정/부정 리뷰 합쳐서 새로운 파일로 저장
 result=pd.concat([n_data,p_data], ignore_index=True, axis=0).sample(frac=1).reset_index(drop=True)
 print(result.groupby('rate').size().reset_index(name = 'count'))
-result.to_csv('result_data.csv',mode='w', index=False)
+result.to_csv('result_all_data.txt',mode='w', index=False)
+
+
