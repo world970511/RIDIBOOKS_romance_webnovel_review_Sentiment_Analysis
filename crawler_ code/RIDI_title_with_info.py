@@ -31,6 +31,7 @@ def crawling_info(infocode):#리뷰 크롤링
 
         title=[]
         id=[]
+        keyword=[]
         review = []
         rate = []
 
@@ -51,15 +52,18 @@ def crawling_info(infocode):#리뷰 크롤링
         #html가져오기
         source = driver.page_source
         html = bs(source, 'lxml')
-        ti= str(html.select_one('h3.info_title_wrap').text)
+        ti= str(html.select_one('h3.info_title_wrap').text)#제목 크롤링
+        k=[]#키워드 크롤링
+        for i in html.select('span.keyword'):
+            k.append(str(i.text))
 
         # 평점과 리뷰 크롤링
         info = html.select('li.review_list')
 
-
         for i in info:
             try:
                 title.append(ti)
+                keyword.append(k)
                 id.append(str(i.select_one('span.reviewer_id')).replace('<span class="reviewer_id">', '').replace('</span>', ''))
                 st = str(i.select_one('span.StarRate_IconFill'))
                 # 5점과 4점은 긍정(1), 3점은 애매모호(0) 1점과 2점은 부정(-1)으로 분류
@@ -76,7 +80,6 @@ def crawling_info(infocode):#리뷰 크롤링
 
             try:
                 f = str(i)
-
                 if '<span class="hidden">'in f:  #span class="hidden"이 있을 경우
                     ans = re.search(r'<span class="hidden">.+', f).group()
                     t = ans.replace('<span class="hidden">', '').replace('</span></p>', '').replace('<br/>',' ')
@@ -88,19 +91,17 @@ def crawling_info(infocode):#리뷰 크롤링
                 review.append(t)
             except:
                 title.pop()
+                keyword.pop()
                 id.pop()
                 rate.pop()
 
-        data={'title':title,'id':id,'rate':rate,'review':review}
+        data={'title':title,'keyword':keyword,'id':id,'rate':rate,'review':review}
         res = pd.DataFrame(data)
-
-
-
         return res # 반환
 
 #메인
 if __name__ == "__main__":
-    res = pd.DataFrame(columns=['title','id','rate','review'])
+    res = pd.DataFrame(columns=['title','keyword','id','rate','review'])
 
     with open('ridi_code.txt','r',encoding='utf-8') as f:
         c_line=f.readlines()# txt파일에 담긴 책 소개&구매 페이지 주소 가져오기
@@ -108,6 +109,7 @@ if __name__ == "__main__":
     for code in c_line:#주소에서 별점과 리뷰 추출
         review = crawling_info(code.replace('\n', '').replace('v2/Detail?id=', 'books/'))
         res = pd.concat([res, review], ignore_index=True,axis=0)
+        res.to_csv('test.txt',mode='w' ,sep='\t', index=False)
         print(res)
 
     res.to_csv('ridi_info_with_title_serialization.txt',mode='w' ,sep='\t', index=False)
@@ -119,4 +121,3 @@ if __name__ == "__main__":
     # 드라이브 종료
     driver.close()
     driver.quit()
-
